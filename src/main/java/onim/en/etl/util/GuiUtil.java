@@ -228,6 +228,10 @@ public class GuiUtil {
       buttonList.add(new ToggleButton("onim.en.etl.smartHealthBar", Prefs.get().smartHealthBar, b -> {
         Prefs.get().smartHealthBar = b;
       }));
+      // add detailTheLowStatus Togglebutton
+      buttonList.add(new ToggleButton("onim.en.etl.detailTheLowStatus", Prefs.get().detailTheLowStatus, b -> {
+        Prefs.get().detailTheLowStatus = b;
+      }));
       buttonList.add(getClearCacheButton());
       buttonList.add(getResetSettingsButton());
     });

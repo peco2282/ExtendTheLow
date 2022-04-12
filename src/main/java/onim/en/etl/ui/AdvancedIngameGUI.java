@@ -14,7 +14,6 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.potion.Potion;
@@ -304,27 +303,37 @@ public class AdvancedIngameGUI extends GuiIngameForge {
 
     int i = scaledResolution.getScaledWidth();
     boolean right = Prefs.get().invertTheLowStatus;
+
+    // detailTheLowStatus
+    boolean detail = Prefs.get().detailTheLowStatus;
+    int horizontal = 120, bottom = 32;
+    // true
+    if (detail) {
+      horizontal = 170;
+      bottom = 52;
+    }
     /*
       draw rect top of left or right.
      */
+    // 描画を detail の真偽で場合分け
     if (right) {
-      GuiUtil.drawGradientRectHorizontal(i - 170, 0, i - 85, 52, 0x00336633, 0xAA336666);
-      GuiUtil.drawGradientRectHorizontal(i - 85, 0, i, 52, 0xAA336666, 0xAA336699);
+      GuiUtil.drawGradientRectHorizontal(i - horizontal, 0, i - horizontal / 2, bottom, 0x00336633, 0xAA336666);
+      GuiUtil.drawGradientRectHorizontal(i - horizontal / 2, 0, i, bottom, 0xAA336666, 0xAA336699);
     } else {
       // bottomの編集 32 -> 52
-      GuiUtil.drawGradientRectHorizontal(0, 0, 85, 52, 0xAA336699, 0xAA336666);
-      GuiUtil.drawGradientRectHorizontal(85, 0, 170, 52, 0xAA336666, 0x00336633);
+      GuiUtil.drawGradientRectHorizontal(0, 0, horizontal / 2, bottom, 0xAA336699, 0xAA336666);
+      GuiUtil.drawGradientRectHorizontal(horizontal / 2, 0, horizontal, bottom, 0xAA336666, 0x00336633);
     }
 
     GlStateManager.pushMatrix();
-    GlStateManager.translate(right ? i - 170 : 4, 4, 0);
+    GlStateManager.translate(right ? i - horizontal : 4, 4, 0);
     GlStateManager.color(0.3F, 0.3F, 0.4F);
     this.drawFace(player.getLocationSkin(), 1, 1);
     GlStateManager.color(1.0F, 1.0F, 1.0F);
     this.drawFace(player.getLocationSkin(), 0, 0);
     GlStateManager.popMatrix();
     GlStateManager.pushMatrix();
-    GlStateManager.translate(right ? i - 170 : 0, 0, 0);
+    GlStateManager.translate(right ? i - horizontal : 0, 0, 0);
     if (playerStatus != null) {
 
       int widthLevel = font.drawStringWithShadow("Lv." + playerStatus.mainLevel, 22, 2, 0xFFFFFF);
@@ -346,39 +355,61 @@ public class AdvancedIngameGUI extends GuiIngameForge {
       int MagicRemainExp = ExpArray.ExpArrays(playerStatus.magicStatus.leve, magicExp, playerStatus.magicStatus.reincCount);
 
       // 残りexpの追加
+      // detailTheLowStatus = true の時にのみ詳細が表示されるように。
+      String s;
       if (f < 3) {
         drawIcon(TEX_SWORD, 2, 2, 8, 8);
-        String s = I18n.format("onim.en.etl.playerStatusView.expText", playerStatus.swordStatus.leve, SwordRemainExp);
+
+        if (detail) {
+          s = String.format("lv.%d, 次のlv.まで: %d exp", playerStatus.swordStatus.leve, SwordRemainExp);
+        } else {
+          s = String.format("(lv. %d)", playerStatus.swordStatus.leve);
+        }
         font.drawStringWithShadow(s, 12, 2, 0xFFFFFF);
       } else if (f < 6) {
         drawIcon(TEX_WAND, 2, 2, 8, 8);
-        String s = I18n.format("onim.en.etl.playerStatusView.expText", playerStatus.magicStatus.leve, MagicRemainExp);
+
+        if (detail) {
+          s = String.format("lv.%d, 次のlv.まで: %d exp", playerStatus.magicStatus.leve, MagicRemainExp);
+        } else  {
+          s = String.format("(lv. %d)", playerStatus.magicStatus.leve);
+        }
         font.drawStringWithShadow(s, 12, 2, 0xFFFFFF);
       } else {
         drawIcon(TEX_BOW, 2, 2, 8, 8);
-        String s = I18n.format("onim.en.etl.playerStatusView.expText", playerStatus.bowStatus.leve, BowRemainExp);
+        if (detail) {
+          s = String.format("lv.%d, 次のlv.まで: %d exp", playerStatus.bowStatus.leve, BowRemainExp);
+        } else {
+          s = String.format("(lv. %d)", playerStatus.bowStatus.leve);
+        }
         font.drawStringWithShadow(s, 12, 2, 0xFFFFFF);
       }
       GlStateManager.popMatrix();
 
-      // 以下転生数の追加
-      int widthReinc = font.drawStringWithShadow(playerStatus.getReinCount() + " 転生", 4, 32, 0xFFFFFF);
-      GlStateManager.pushMatrix();
-      GlStateManager.translate(widthReinc + 4, 32, 0);
+      // detail が trueの時、次のlvまでの経験値量、
+      if (detail) {
+        // 以下転生数の追加
+        int widthReinc = font.drawStringWithShadow(playerStatus.getReinCount() + " 転生", 4, 32, 0xFFFFFF);
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(widthReinc + 4, 32, 0);
 
 
-      if (f < 3) {
-        String t = String.format("剣: %d 転生", playerStatus.swordStatus.reincCount);
-        font.drawStringWithShadow(t, 4, 0, 0xFFFFFF);
-      } else if (f < 6) {
-        String t = String.format("魔: %d 転生", playerStatus.magicStatus.reincCount);
-        font.drawStringWithShadow(t, 4, 0, 0xFFFFFF);
-      } else {
-        String t = String.format("弓: %d 転生", playerStatus.bowStatus.reincCount);
-        font.drawStringWithShadow(t, 4, 0, 0xFFFFFF);
+        if (f < 3) {
+          String t = String.format("剣: %d 転生", playerStatus.swordStatus.reincCount);
+          font.drawStringWithShadow(t, 4, 0, 0xFFFFFF);
+        } else if (f < 6) {
+          String t = String.format("魔: %d 転生", playerStatus.magicStatus.reincCount);
+          font.drawStringWithShadow(t, 4, 0, 0xFFFFFF);
+        } else {
+          String t = String.format("弓: %d 転生", playerStatus.bowStatus.reincCount);
+          font.drawStringWithShadow(t, 4, 0, 0xFFFFFF);
+        }
+        GlStateManager.popMatrix();
+
+        // job の追加
+        font.drawStringWithShadow(String.format("Job: %s", playerStatus.jobName), 4, 42, 0xFF6CFF);
       }
 
-      GlStateManager.popMatrix();
 
       int widthGalions = font
         .drawStringWithShadow(TheLowUtil.formatGalions(playerStatus.galions), 4, 22, 0xFFFFFF);
@@ -386,10 +417,6 @@ public class AdvancedIngameGUI extends GuiIngameForge {
       font
         .drawStringWithShadow(String.format("%d Units", playerStatus.unit), widthGalions + 4, 22, 0xFFFFFF);
 
-
-
-      // job の追加
-      font.drawStringWithShadow(String.format("Job: %s", playerStatus.jobName), 4, 42, 0xFF6CFF);
     } else {
       font.drawStringWithShadow(player.getDisplayNameString(), 20, 6, 0xFFFFFF);
     }

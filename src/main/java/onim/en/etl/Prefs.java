@@ -47,7 +47,6 @@ public class Prefs {
         Files.write(path, Arrays.asList(gson.toJson(get()).split("\n")), StandardCharsets.UTF_8);
       } catch (IOException e) {
         e.printStackTrace();
-        return;
       }
     }).start();
   }
@@ -76,4 +75,7 @@ public class Prefs {
   public boolean debugMode = true;
 
   public boolean smartHealthBar = true;
+
+  public boolean detailTheLowStatus = false;
+
 }
