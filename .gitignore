@@ -1,6 +1,7 @@
+.vscode
+
 # eclipse
 bin
-.vscode
 *.launch
 .settings
 .metadata
